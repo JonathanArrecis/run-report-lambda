@@ -1,4 +1,4 @@
-package helloworld;
+package helloworld.model;
 
 public class RunReportRequest {
     private String idAccount;
