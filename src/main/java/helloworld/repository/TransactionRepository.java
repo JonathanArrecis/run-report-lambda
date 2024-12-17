@@ -293,10 +293,11 @@ public class TransactionRepository {
 
     @Tracing
     public GenericResultsetData fetchTransactions(RunReportRequest runReportRequest){
-
+        System.out.println("TransactionRepository.fetchTransactions");
         try(Connection conn = DatabaseConfig.getConnection();
             PreparedStatement ps = conn.prepareStatement(QUERY);
         ){
+            System.out.println("TransactionRepository.fetchTransactions - Connection created");
             Map<String, Object> params = new HashMap<>();
             params.put("accountid", runReportRequest.getIdAccount());
             params.put("startDate", runReportRequest.getFechaInicial());

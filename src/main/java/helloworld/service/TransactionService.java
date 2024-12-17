@@ -10,6 +10,7 @@ public class TransactionService {
 
     @Tracing
     public GenericResultsetData getTransactions(RunReportRequest request){
+        System.out.println("TransactionService.getTransactions");
         return transactionRepository.fetchTransactions(request);
     }
 }
