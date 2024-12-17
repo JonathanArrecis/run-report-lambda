@@ -1,5 +1,7 @@
 package helloworld.config;
 
+import software.amazon.lambda.powertools.tracing.Tracing;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,7 +14,7 @@ public class DatabaseConfig {
 
     static {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Error loading MySQL Driver", e);
         }

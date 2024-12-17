@@ -3,12 +3,12 @@ package helloworld.repository;
 import helloworld.model.RunReportRequest;
 import helloworld.config.DatabaseConfig;
 import helloworld.model.GenericResultsetData;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TransactionRepository {
@@ -35,7 +35,6 @@ public class TransactionRepository {
             "    and cause_id not in (1047,1024,1046,1023,1067,1068,1025,1045,1053,1022,1021,1026,1044,1054,1013,1014,1015,1016,1017,1036,1076,1077,1027,1040,1082,1083,1086,1087,1084,1085,1081,1088,1033,1090,1091,1008,1039,1092, 1107, 1108, 1111, 1112\t)\n" +
             "    and st.savings_account_id = ${accountid}\n" +
             "    and st.transaction_date between ${startDate} and ${endDate}\n" +
-            "    -- limit ${limit} offset ${offset}\n" +
             " union all\n" +
             " /* transacciones ach entrantes */\n" +
             " select at.id, at.transaction_date, at.amount, '' description, \n" +
@@ -286,10 +285,13 @@ public class TransactionRepository {
             "   and at.savings_account_id = ${accountid}\n" +
             "   and at.transaction_date  between  ${startDate} and ${endDate}\n" +
             "order by id \n" +
-            "limit ${limit} offset ${offset}";
+            "limit ${limit} offset ${offset}\n" +
+            "\n" +
+            "\n";
 
 
 
+    @Tracing
     public GenericResultsetData fetchTransactions(RunReportRequest runReportRequest){
 
         try(Connection conn = DatabaseConfig.getConnection();
@@ -299,16 +301,16 @@ public class TransactionRepository {
             params.put("accountid", runReportRequest.getIdAccount());
             params.put("startDate", runReportRequest.getFechaInicial());
             params.put("endDate", runReportRequest.getFechaFinal());
+            params.put("limit", 200);
+            params.put("offset", 0);
 
 
             RowMapper<GenericResultsetData> rowMapper = new GenericResultDataRowMapper();
             DynamicQueryExecutor executor = new DynamicQueryExecutor();
-            List<GenericResultsetData> result = executor.executeQuery(conn, QUERY, params, rowMapper);
-
+            return executor.executeQuery(conn, QUERY, params, rowMapper);
         }catch(SQLException e){
             throw new RuntimeException(e);
         }
-        return null;
     }
 
 

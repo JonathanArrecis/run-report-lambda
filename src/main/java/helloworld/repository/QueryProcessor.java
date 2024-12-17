@@ -1,5 +1,7 @@
 package helloworld.repository;
 
+import software.amazon.lambda.powertools.tracing.Tracing;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -15,6 +17,7 @@ public final class QueryProcessor {
         this.processedQuery = processQuery(originalQuery);
     }
 
+    @Tracing
     private String processQuery(String query){
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
         Matcher matcher = pattern.matcher(query);
@@ -27,6 +30,7 @@ public final class QueryProcessor {
         matcher.appendTail(sb);
         return sb.toString();
     }
+
 
     public String getProcessedQuery(){
         return this.processedQuery;
