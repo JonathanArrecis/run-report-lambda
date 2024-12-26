@@ -1,9 +1,11 @@
 package helloworld.config;
 
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
 
 public class DatabaseConfig {
 
@@ -21,16 +23,24 @@ public class DatabaseConfig {
             throw new RuntimeException("Error loading MySQL Driver", e);
         }
     }
+    private static final JdbcTemplate jdbcTemplate = initJdbcTemplate();
 
-    public static Connection getConnection() throws RuntimeException{
-        try {
-            System.out.println("Creating connection to the database");
-            String username = System.getenv("DBUSERNAME");
-            String pass = System.getenv("DBPASSWORD");
-            return DriverManager.getConnection(CONNECTION_STRING,username, pass);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error connecting to the database", e);
-        }
+    private static JdbcTemplate initJdbcTemplate() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(CONNECTION_STRING);
+        config.setUsername(System.getenv("DBUSERNAME"));
+        config.setPassword(System.getenv("DBPASSWORD"));
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.setMaximumPoolSize(System.getenv("MAX_POOL_SIZE") != null ? Integer.parseInt(System.getenv("MAX_POOL_SIZE")) : 10);
+        config.setMinimumIdle(System.getenv("MIN_IDLE") != null ? Integer.parseInt(System.getenv("MIN_IDLE")) : 2);
+        config.setConnectionTimeout(System.getenv("CONNECTION_TIMEOUT") != null ? Long.parseLong(System.getenv("CONNECTION_TIMEOUT")) : 30000);
+        config.setIdleTimeout(System.getenv("IDLE_TIMEOUT") != null ? Long.parseLong(System.getenv("IDLE_TIMEOUT")) : 600000);
+        config.setMaxLifetime(System.getenv("MAX_LIFETIME") != null ? Long.parseLong(System.getenv("MAX_LIFETIME")) : 1800000);
+        DataSource dataSource = new HikariDataSource(config);
+        return new JdbcTemplate(dataSource);
     }
 
+    public static JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
 }

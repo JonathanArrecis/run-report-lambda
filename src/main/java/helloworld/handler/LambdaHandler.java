@@ -2,17 +2,23 @@ package helloworld.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import helloworld.model.RunReportRequest;
-import helloworld.model.GenericResultsetData;
-import helloworld.service.TransactionService;
+import helloworld.data.GenericResultsetData;
+import helloworld.service.JsonProcessorService;
+import helloworld.service.ReportService;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
-public class LambdaHandler implements RequestHandler<RunReportRequest, GenericResultsetData> {
-    private final TransactionService transactionService = new TransactionService();
+import java.util.Map;
+
+public class LambdaHandler implements RequestHandler<String, GenericResultsetData> {
+    private final ReportService reportService = new ReportService();
+    private final JsonProcessorService jsonProcessorService = new JsonProcessorService();
+
 
     @Tracing
     @Override
-    public GenericResultsetData handleRequest(RunReportRequest runReportRequest, Context context) {
-        return transactionService.getTransactions(runReportRequest);
+    public GenericResultsetData handleRequest(String input, Context context) {
+        Map<String, String> queryParams = jsonProcessorService.getQueryParams(input);
+        String nameReport = jsonProcessorService.getNameReport(input);
+        return reportService.getReport(nameReport, queryParams);
     }
 }
