@@ -8,15 +8,20 @@ import helloworld.service.ReportService;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
 import java.util.Map;
+import java.util.Objects;
 
-public class LambdaHandler implements RequestHandler<String, GenericResultsetData> {
+public class LambdaHandler implements RequestHandler<Map<String,Object>,GenericResultsetData> {
     private final ReportService reportService = new ReportService();
     private final JsonProcessorService jsonProcessorService = new JsonProcessorService();
 
 
     @Tracing
     @Override
-    public GenericResultsetData handleRequest(String input, Context context) {
+    public GenericResultsetData  handleRequest(Map<String, Object> input, Context context) {
+        if (Objects.isNull(input)) {
+            throw new IllegalArgumentException("Input is required");
+        }
+        System.out.println("Input: " + input.toString());
         Map<String, String> queryParams = jsonProcessorService.getQueryParams(input);
         String nameReport = jsonProcessorService.getNameReport(input);
         return reportService.getReport(nameReport, queryParams);

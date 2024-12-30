@@ -13,7 +13,7 @@ public final class ResultsetColumnHeaderData {
 
     @Tracing
     public static ResultsetColumnHeaderData basic(final String columnName, final String columnType){
-        String columnDisplayType = "string";//todo implement logic
+        String columnDisplayType = "string";
         String columnLength = "";
         boolean isColumnNullable = false;
         boolean isColumnPrimaryKey = false;

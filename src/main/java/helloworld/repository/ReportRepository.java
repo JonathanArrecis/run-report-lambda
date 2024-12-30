@@ -7,6 +7,7 @@ import helloworld.data.ResultsetRowData;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
@@ -25,8 +26,10 @@ public class ReportRepository {
     public GenericResultsetData fillGenericResultSetData(String sql, MapSqlParameterSource namedParameters){
 
         try{
+            final NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
             final SqlParameterSource parameterSource = namedParameters != null ?namedParameters : new MapSqlParameterSource();
-            final SqlRowSet rs = this.jdbcTemplate.queryForRowSet(sql, parameterSource);
+
+            final SqlRowSet rs = namedParameterJdbcTemplate.queryForRowSet(sql, parameterSource);
             final List<ResultsetColumnHeaderData> headers = new ArrayList<>();
             final List<ResultsetRowData> resultsetRowData = new ArrayList<>();
             final SqlRowSetMetaData metaData = rs.getMetaData();
@@ -59,10 +62,11 @@ public class ReportRepository {
 
     @Tracing
     public String getSqlToRun(final String nameReport, final Map<String, String> queryParams, MapSqlParameterSource namedParameters) {
-
+        System.out.println("Getting sql for report: " + nameReport);
         String sql = getSql(nameReport);
         final Set<String> keys = queryParams.keySet();
         for(String key : keys){
+            System.out.println("Replacing key: " + key + " with value: " + queryParams.get(key));
             final String value = queryParams.get(key);
             if(sql.contains(key)){
                 final String keysasNamedParameter = key.replace("${",":").replace("}","");
@@ -76,7 +80,6 @@ public class ReportRepository {
 
     @Tracing
     private String getSql(final String nameReport){
-
 
         final String inputSql = "select report_sql as the_sql from stretchy_report sr where sr.report_name = ? ";
         final String inputSqlWrapped = wrapSql(inputSql);
