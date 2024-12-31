@@ -5,46 +5,46 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.util.Optional;
 
 public class DatabaseConfig {
 
-    private static final String DB_MODE = System.getenv("DB_MODE");
 
-    private static final String CONNECTION_STRING_READ = String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true",
-            System.getenv("HOSTNAME_READ"),
-            System.getenv("PORT_READ"),
-            System.getenv("DBNAME_READ"));
-
-    private static final String CONNECTION_STRING_WRITE = String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true",
-            System.getenv("HOSTNAME_WRITE"),
-            System.getenv("PORT_WRITE"),
-            System.getenv("DBNAME_WRITE"));
-
+    private static final String DB_MODE = Optional.ofNullable(System.getenv("DB_MODE")).orElse("write");
     private static final JdbcTemplate jdbcTemplate = initJdbcTemplate();
-    private static final String DB_USERNAME_READ = System.getenv("DBUSERNAME_READ");
-    private static final String DB_PASSWORD_READ = System.getenv("DBPASSWORD_READ");
-    private static final String DB_USERNAME_WRITE = System.getenv("DBUSERNAME_WRITE");
-    private static final String DB_PASSWORD_WRITE = System.getenv("DBPASSWORD_WRITE");
-
-    private static final String READ_MODE = "read";
-    static {
-        try {
-            System.out.println("Loading MySQL JDBC driver");
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error loading MySQL Driver", e);
-        }
-    }
 
 
     private static JdbcTemplate initJdbcTemplate() {
 
-        String mode = (DB_MODE == null || DB_MODE.isEmpty()) ? "write" : DB_MODE;
+        final String CONNECTION_STRING_READ = String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true",
+                System.getenv("HOSTNAME_READ"),
+                System.getenv("PORT_READ"),
+                System.getenv("DB_NAME_READ"));
+
+        final String CONNECTION_STRING_WRITE = String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true",
+                System.getenv("HOSTNAME_WRITE"),
+                System.getenv("PORT_WRITE"),
+                System.getenv("DB_NAME_WRITE"));
+
+        final String DB_USERNAME_READ = System.getenv("DB_USERNAME_READ");
+        final String DB_PASSWORD_READ = System.getenv("DB_PASSWORD_READ");
+        final String DB_USERNAME_WRITE = System.getenv("DB_USERNAME_WRITE");
+        final String DB_PASSWORD_WRITE = System.getenv("DB_PASSWORD_WRITE");
+        final String READ_MODE = "read";
+
+        String mode = DB_MODE.equalsIgnoreCase("read") ? "read" : "write";
         System.out.println("DB_MODE: " + mode);
 
         String dbUrl = READ_MODE.equalsIgnoreCase(mode) ? CONNECTION_STRING_READ : CONNECTION_STRING_WRITE;
+        System.out.println("DB_URL: " + dbUrl);
         String dbUsername = READ_MODE.equalsIgnoreCase(mode) ? DB_USERNAME_READ : DB_USERNAME_WRITE;
+        System.out.println("DB_USERNAME_write: " + DB_USERNAME_WRITE);
+        System.out.println("DB_USERNAME_read: " + DB_USERNAME_READ);
+        System.out.println("DB_USERNAME: " + dbUsername);
         String dbPassword = READ_MODE.equalsIgnoreCase(mode) ? DB_PASSWORD_READ : DB_PASSWORD_WRITE;
+        System.out.println("DB_PASSWORD_write: " + DB_PASSWORD_WRITE);
+        System.out.println("DB_PASSWORD_read: " + DB_PASSWORD_READ);
+        System.out.println("DB_PASSWORD: " + dbPassword);
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dbUrl);
